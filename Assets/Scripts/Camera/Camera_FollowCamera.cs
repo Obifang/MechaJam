@@ -10,14 +10,9 @@ public class Camera_FollowCamera : MonoBehaviour
     // The Object we want to look at
     [Header("General Settings")]
     public Transform lookAt;
-    public Transform target;
-    public float Distance;
-    [Range(0f, 1f)]
-    public float DistanceAboveCharacter = 0.0f;
-
+    public Transform Parent;
 
     [Header("Follow Settings")]
-    public bool LockWhenIdle;
     public bool ClampYDistance = true;
     public float MinYDistance = 25f;
     public float MaxYDistance = 25f;
@@ -70,26 +65,11 @@ public class Camera_FollowCamera : MonoBehaviour
     {
         
         LateUpdateFollow();
-        //FollowCameraAdjust();
-    }
-
-    private void FollowCameraAdjust()
-    {
-        RaycastHit rayHit;
-        Vector3 lookAtOffset = (transform.position - lookAt.position).normalized;
-        LayerMask layer = 1 << 6;
-        //+1f with distance to put a little behind the camera, should be changed to non magic
-        bool RaycastToCam = Physics.Raycast(lookAt.position, lookAtOffset, out rayHit, Distance + 1f, ~layer);
-
-        // Handles Raycasting for general objects
-        if (RaycastToCam) {
-            transform.position = (lookAt.position + (lookAtOffset.normalized * rayHit.distance * 0.9f));
-        }
     }
 
     private void LateUpdateFollow()
     {
-        var forward = target.forward.normalized;
+        var forward = Parent.forward.normalized;
         // Create Direction and Rotation values for the camera to use
         Vector3 direction = new Vector3(forward.x, forward.y + DistanceAboveCharacter, forward.z + Distance);
         Quaternion rotation = Quaternion.Euler(_locationY, _locationX, 0f);
@@ -105,7 +85,7 @@ public class Camera_FollowCamera : MonoBehaviour
     {
         //*0.1f used to correct delta value to pre GetAxis Speeds
         var lookAxis = Manager_Input.Instance.Look.ReadValue<Vector2>() * 0.1f;
-        
+
         if (InvertX) {
             _locationX -= lookAxis.x; //Input.GetAxis("Mouse X");
         } else {
@@ -136,4 +116,5 @@ public class Camera_FollowCamera : MonoBehaviour
             _locationY = Mathf.Clamp(_locationY, MinYDistance, MaxYDistance);
         if (ClampXDistance)
             _locationX = Mathf.Clamp(_locationX, MinXDistance, MaxXDistance);
+    }
 }
